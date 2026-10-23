@@ -9,12 +9,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
-from altron.ops import apply_plan
-from altron.llm import plan_cleaning, plan_chart, plan_pivot, plan_formula
 from altron.charts import render
+from altron.limits import allow
+from altron.llm import plan_chart, plan_cleaning, plan_formula, plan_pivot
+from altron.ops import apply_plan
 from altron.pivots import build_pivot
 from altron.quality import quality_report
-from altron.limits import allow
 
 st.set_page_config(page_title="Altron Pro", page_icon="◆", layout="wide")
 
@@ -316,33 +316,35 @@ with tab1:
     base_score = quality_report(st.session_state.original)["score"]
 
     left, right = st.columns([1, 1.6], gap="large")
-    with left:
-        with st.container(border=True):
-            st.markdown("#### Data quality")
-            score = quality["score"]
-            fig = go.Figure(go.Indicator(
-                mode="gauge+number", value=score,
-                number={"font": {"size": 44, "color": INK}, "suffix": " / 100"},
-                gauge={
-                    "axis": {"range": [0, 100], "tickcolor": "#9AA8B6"},
-                    "bar": {"color": COBALT, "thickness": 0.28},
-                    "bgcolor": "white", "borderwidth": 0,
-                    "steps": [
-                        {"range": [0, 50], "color": "#FDE3E3"},
-                        {"range": [50, 80], "color": "#FEF0CC"},
-                        {"range": [80, 100], "color": "#D3F5E6"},
-                    ],
-                },
-            ))
-            fig.update_layout(height=210, margin=dict(l=20, r=20, t=20, b=0), paper_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig, width="stretch")
-            delta = score - base_score
-            if delta > 0:
-                st.success(f"Up {delta} points since you uploaded this file.")
-            elif quality["mostly_empty_columns"]:
-                st.warning("Mostly empty: " + ", ".join(map(str, quality["mostly_empty_columns"])))
-            else:
-                st.caption("Apply cleaning steps and watch the score move.")
+    
+    # THIS IS THE FIXED BLOCK (combined the two 'with' statements)
+    with left, st.container(border=True):
+        st.markdown("#### Data quality")
+        score = quality["score"]
+        fig = go.Figure(go.Indicator(
+            mode="gauge+number", value=score,
+            number={"font": {"size": 44, "color": INK}, "suffix": " / 100"},
+            gauge={
+                "axis": {"range": [0, 100], "tickcolor": "#9AA8B6"},
+                "bar": {"color": COBALT, "thickness": 0.28},
+                "bgcolor": "white", "borderwidth": 0,
+                "steps": [
+                    {"range": [0, 50], "color": "#FDE3E3"},
+                    {"range": [50, 80], "color": "#FEF0CC"},
+                    {"range": [80, 100], "color": "#D3F5E6"},
+                ],
+            },
+        ))
+        fig.update_layout(height=210, margin={"l": 20, "r": 20, "t": 20, "b": 0}, paper_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig, width="stretch")
+        delta = score - base_score
+        if delta > 0:
+            st.success(f"Up {delta} points since you uploaded this file.")
+        elif quality["mostly_empty_columns"]:
+            st.warning("Mostly empty: " + ", ".join(map(str, quality["mostly_empty_columns"])))
+        else:
+            st.caption("Apply cleaning steps and watch the score move.")
+            
     with right:
         m1, m2 = st.columns(2)
         m1.metric("Missing values", f"{quality['missing_pct']}%")
@@ -451,9 +453,9 @@ with tab2:
                 fig.update_layout(
                     template="plotly_white", font_family="Manrope",
                     colorway=[COBALT, MINT, AMBER, "#7C5CFF", "#E5484D", "#0B1B2B"],
-                    margin=dict(l=10, r=10, t=50, b=10),
+                    margin={"l": 10, "r": 10, "t": 50, "b": 10},
                 )
-                fig.update_traces(marker_color=COBALT, selector=dict(type="bar"))
+                fig.update_traces(marker_color=COBALT, selector={"type": "bar"})
                 st.plotly_chart(fig, width="stretch")
             except Exception as e:
                 st.error(f"Could not render this chart: {e}")
@@ -550,7 +552,7 @@ with tab5:
         if not missing.empty:
             fig_m = px.bar(missing, x="Missing %", y="Column", orientation="h",
                            color_discrete_sequence=[AMBER], template="plotly_white")
-            fig_m.update_layout(font_family="Manrope", margin=dict(l=10, r=10, t=10, b=10), height=320)
+            fig_m.update_layout(font_family="Manrope", margin={"l": 10, "r": 10, "t": 10, "b": 10}, height=320)
             st.plotly_chart(fig_m, width="stretch")
         else:
             st.success("No missing values found.")
@@ -560,7 +562,7 @@ with tab5:
             fig_c = px.imshow(numeric_df.corr(), text_auto=".2f", aspect="auto",
                               color_continuous_scale=[[0, AMBER], [0.5, "#FFFFFF"], [1, COBALT]],
                               zmin=-1, zmax=1, template="plotly_white")
-            fig_c.update_layout(font_family="Manrope", margin=dict(l=10, r=10, t=10, b=10), height=320)
+            fig_c.update_layout(font_family="Manrope", margin={"l": 10, "r": 10, "t": 10, "b": 10}, height=320)
             st.plotly_chart(fig_c, width="stretch")
         else:
             st.info("Needs at least two numeric columns.")

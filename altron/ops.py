@@ -1,5 +1,5 @@
 import operator as pyop
-from typing import Annotated, Literal, Union
+from typing import Annotated, Literal
 
 import pandas as pd
 from pydantic import BaseModel, Field
@@ -49,7 +49,7 @@ class ClipOutliers(BaseModel):
 
 
 Operation = Annotated[
-    Union[DropNA, FillNA, DropDuplicates, Rename, CastType, TextClean, FilterRows, DropColumns, ClipOutliers],
+    DropNA | FillNA | DropDuplicates | Rename | CastType | TextClean | FilterRows | DropColumns | ClipOutliers,
     Field(discriminator='op'),
 ]
 

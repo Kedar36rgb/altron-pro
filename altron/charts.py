@@ -1,7 +1,10 @@
 from typing import Literal
+
 import plotly.express as px
 from pydantic import BaseModel, Field
+
 from .ops import need
+
 
 class ChartSpec(BaseModel):
     kind: Literal['bar', 'line', 'scatter', 'histogram', 'box', 'pie']

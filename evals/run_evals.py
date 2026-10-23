@@ -7,8 +7,9 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
+
 from altron.llm import plan_cleaning
-from altron.ops import apply_plan
+
 
 def run_evals():
     # Load cases relative to this script's directory
@@ -29,7 +30,7 @@ def run_evals():
         
         try:
             # Ask the AI to plan and apply
-            plan, result_df = plan_cleaning(df, case['request'])
+            _plan, result_df = plan_cleaning(df, case['request'])
             
             # Check 1: Row count
             if len(result_df) != case['expect_rows']:
@@ -61,12 +62,12 @@ def run_evals():
             print("  ✅ Passed")
             passed += 1
             
-        except Exception as e:
-            print(f"  ❌ Failed with Error: {e}")
+        except Exception as err:
+            print(f"  ❌ Failed with Error: {err}")
             
-    print(f"\n==================================")
+    print("\n==================================")
     print(f"FINAL SCORE: {passed} / {total} ({(passed/total)*100:.1f}%)")
-    print(f"==================================")
+    print("==================================")
 
 if __name__ == "__main__":
     run_evals()

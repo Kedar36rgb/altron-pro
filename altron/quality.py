@@ -1,4 +1,3 @@
-import pandas as pd
 
 def quality_report(df):
     n = max(len(df), 1)

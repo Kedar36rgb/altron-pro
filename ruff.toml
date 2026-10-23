@@ -1,0 +1,6 @@
+﻿# Ignore rules that are too strict for CLI scripts and Streamlit apps
+lint.ignore = [
+    "BLE001", # Allow catching general Exception
+    "T201",   # Allow print statements
+    "S101",   # Allow assert statements in tests
+]

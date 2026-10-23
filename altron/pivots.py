@@ -1,7 +1,9 @@
 from typing import Literal
-import pandas as pd
+
 from pydantic import BaseModel
+
 from .ops import need
+
 
 class PivotSpec(BaseModel):
     index: list[str]

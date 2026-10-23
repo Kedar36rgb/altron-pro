@@ -1,6 +1,7 @@
+import pandas as pd
 from openpyxl.utils import get_column_letter
 from pydantic import BaseModel
-import pandas as pd
+
 
 class FormulaSpec(BaseModel):
     formula: str
