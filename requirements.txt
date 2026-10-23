@@ -1,0 +1,10 @@
+streamlit
+pandas
+numpy
+plotly
+groq
+pydantic>=2
+python-dotenv
+openpyxl
+pytest
+ruff

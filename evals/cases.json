@@ -1,0 +1,32 @@
+[
+  {
+    "id": "missing_values",
+    "request": "Fill missing age with the mean",
+    "csv": "name,age\nAlice,25\nBob,\nCharlie,35",
+    "expect_rows": 3,
+    "expect_cols": ["name", "age"],
+    "expect_no_nulls_in": "age"
+  },
+  {
+    "id": "text_cleaning",
+    "request": "Lowercase the name column and strip spaces",
+    "csv": "name,age\n Alice ,25\n BOB ,30",
+    "expect_rows": 2,
+    "expect_cols": ["name", "age"],
+    "expect_value_in_col": {"col": "name", "row": 0, "expected": "alice"}
+  },
+  {
+    "id": "duplicates",
+    "request": "Drop duplicate rows",
+    "csv": "id,value\n1,A\n1,A\n2,B",
+    "expect_rows": 2,
+    "expect_cols": ["id", "value"]
+  },
+  {
+    "id": "drop_column",
+    "request": "Remove the value column",
+    "csv": "id,value\n1,A\n2,B",
+    "expect_rows": 2,
+    "expect_cols": ["id"]
+  }
+]
