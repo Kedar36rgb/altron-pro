@@ -6,6 +6,9 @@ from groq import Groq
 from pydantic import ValidationError
 
 from .ops import Plan, apply_plan
+from .charts import ChartSpec
+from .pivots import PivotSpec
+from .formulas import FormulaSpec, column_map, numeric_ranges
 
 # Load environment variables from .env file
 load_dotenv()
@@ -36,7 +39,6 @@ def schema_summary(df, share_samples=False):
     return json.dumps({'rows': len(df), 'columns': cols})
 
 def chat_json(messages):
-    # Ensure the API key is present
     api_key = os.getenv('GROQ_API_KEY')
     if not api_key:
         raise ValueError("GROQ_API_KEY not found in environment variables. Check your .env file.")
@@ -72,8 +74,6 @@ def plan_cleaning(df, request, share_samples=False, retries=1):
             ]
     raise RuntimeError(f'Could not build a valid plan: {last}')
 
-from .charts import ChartSpec
-
 def plan_chart(df, request, share_samples=False, retries=1):
     system_chart = (
         'You convert natural language requests into a JSON chart specification. '
@@ -105,9 +105,6 @@ def plan_chart(df, request, share_samples=False, retries=1):
             ]
     raise RuntimeError(f'Could not build a valid chart spec: {last}')
 
-from .pivots import PivotSpec
-from .formulas import FormulaSpec, column_map
-
 def plan_pivot(df, request, share_samples=False, retries=1):
     system_pivot = (
         'You convert natural language requests into a JSON pivot table specification. '
@@ -134,12 +131,19 @@ def plan_pivot(df, request, share_samples=False, retries=1):
 
 def plan_formula(df, request, dialect="Excel", retries=1):
     cmap = column_map(df)
+    nranges = numeric_ranges(df)
+    
     system_formula = (
         f'You are an expert at writing {dialect} formulas. '
         'Return ONLY JSON matching this JSON Schema: '
         + json.dumps(FormulaSpec.model_json_schema())
         + f' Here is the column map: {cmap}. '
-        'Headers are in row 1, data starts in row 2. '
+        f' Numeric column ranges: {nranges}. '
+        ' A column whose name contains pct or percent, or whose values run up to 100,'
+        ' holds percentage points: divide it by 100 inside the formula.'
+        ' Only treat a column as a fraction if its maximum is 1 or less.'
+        ' Suggest a new, empty column for the result instead of overwriting an existing one.'
+        ' Headers are in row 1, data starts in row 2. '
         'The formula MUST use the column letters provided in the map.'
     )
     msgs = [
